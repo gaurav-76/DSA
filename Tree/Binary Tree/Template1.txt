@@ -1,0 +1,18 @@
+//If we have to check something for every node recursively
+
+bool isBalanced(TreeNode* root) {
+        
+        if(root == NULL) return true;
+
+        int leftH  = height(root->left); //will call other function to get left side height
+        int rightH = height(root->right); //will call other function to get right side height
+
+        if(abs(leftH - rightH) > 1) return false; //logic according to question
+
+        bool left  = isBalanced(root->left); //call same function for left subtree
+        bool right = isBalanced(root->right); //call same function for right subtree
+
+        if(!left || !right) return false;
+
+        return true;  
+}

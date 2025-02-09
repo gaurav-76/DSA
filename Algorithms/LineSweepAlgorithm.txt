@@ -1,0 +1,148 @@
+Resources : 
+Yt - https://www.youtube.com/playlist?list=PLWcWFcYIVmity5YmXs89IIlF-mzTBHzVg
+Difference Arrays - https://codeforces.com/blog/entry/78762
+Sweep Line Algorithm - https://leetcode.com/discuss/study-guide/2166045/line-sweep-algorithms
+
+LSA - help in finding no of Collsion/intervals in a range/interval
+
+Problem : 
+Assume hame kuch queries given hai aur hame un positions pe values update karni hai
+queries : [1,5] [2,3] [3,5]
+
+so will take array of length 6, becuase ham 1 based indexing use kar rahe hai
+our traditional approach will be, 
+take first query = 1, 5 run loop and update value  - 0 1 1 1 1 1     (ignore 0th element)
+take second query = 2, 3 run loop and update value - 0 1 2 2 1 1
+take third query = 3, 5 run loop and update value  - 0 1 2 3 2 2
+
+so now we have updated the arr, but the t.c : n * q where n is no of elements in array and q is no of query
+if queries == n , then t.c : o(n^2) which is not good
+
+
+This here sweepline algorithm comes (Difference Arrays) , here we talk about 1D Easy/Medium problem or sla template
+
+Intuition is that we will take array of n+1 and for every interval/range we will just update
+    start with +1 , and if end is inclusive then end+1 will be decremented by -1
+                        if end is exclusive then end will be decremented by -1
+
+    T.c  for this approach will be o(q)
+    queries : [1,5] [2,3] [3,5]
+                                        index   0  1  2  3  4  5  6
+                                                0  0  0  0  0  0  0
+    Interval 1 : [1, 5]                           +1             -1
+    Interval 2 : [2, 3]                              +1    -1
+    Interval 3 :[3, 5]                                  +1       -1
+     
+    now we will take sum = 0 and        sum =      1  2  3  2  2  0  we got the same result as above 
+    will run loop from 1 to n+1
+    will add count in sum and we will get the value
+
+    this array approach we can use when we have to update anything in array
+
+    map approach use when we have to find collision between meetings/intervals
+    map approach is more efficient in terms of space compared to array approach
+    in map we just store 
+    mp[start] += 1, and mp[end+1] -= 1 (if end is inclusive)
+                    or  mp[end] -=1 (if end is exclusive)
+
+    here result = 0 , or result = 1, will depend upon the qsn
+
+    Array Update - LC - 3355
+    Map Collsion - LC - 2406, 1854, 253, 731, 2237, 1893, 370, 1094
+
+
+    code template : array update
+    bool isZeroArray(vector<int>& nums, vector<vector<int>>& queries) {
+        
+        int n = nums.size();
+        vector<int> mp(n+1, 0);
+        for(vector<int> &query : queries){
+            //if we counting how many times the ith number is present in query
+            mp[query[0]]++;
+            mp[query[1]+1]--;
+        }   
+
+        int count = 0;
+        for(int i = 0; i < n; ++i){
+            count += mp[i]; //if at any point the frequency count is < curr num then it is not possible to make array 0
+            if(count < nums[i]) return false;
+        }
+
+        return true;
+    }
+
+    code template : map
+
+    1)
+    vector<int> fullBloomFlowers(vector<vector<int>>& flowers, vector<int>& people) {
+        
+        map<int, int> mp;
+        for(vector<int> &flower : flowers){
+            mp[flower[0]]++;
+            mp[flower[1]+1]--;
+        }
+
+        int sum = 0;
+        for(auto &it : mp){
+            sum += it.second;
+            it.second = sum;
+        }
+        int n = people.size();
+        vector<int> result(n, 0);
+        for(int i = 0; i < n; ++i){
+            auto it = mp.upper_bound(people[i]);
+            if(it != mp.begin()){
+                it--;
+                result[i] = it->second;
+            }
+        }
+    
+        return result;
+    }
+
+    2)
+    int minGroups(vector<vector<int>>& intervals) {
+        
+        map<int, int> mp;
+        for(vector<int> &interval : intervals){
+            mp[interval[0]]++;
+            mp[interval[1]+1]--;
+        }
+
+        int count = 0;
+        int result = 1;
+        for(auto &it : mp){
+            count += it.second;
+            result = max(result, count);
+        }
+
+        return result;
+    }
+
+    3) My Calender 2
+    bool book(int st, int et) {
+        
+        //doing entry in map for curr meeting
+        mp[st]++;
+        mp[et]--;
+        
+        //this count is used to get the no of meeting at any time
+        int count = 0;
+        for(auto &it : mp){
+            count += it.second;
+            if(count == 3){ //if at any point the 3 meetings overlapping
+                //then we remove the entry which we have done at start
+                mp[st]--; 
+                mp[et]++;
+
+                //and will return false
+                return false;
+            }
+        }
+
+        //if at any point the count not reaches to 3 it means that we never found 
+        //a situation when 3 meetings collided so we can return true
+        return true;
+    }
+
+
